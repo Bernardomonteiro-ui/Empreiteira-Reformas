@@ -1,14 +1,29 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
-import { submitContact, type ContactField, type ContactState } from '@/app/actions/contact';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import {
+  contactSummary,
+  FORM_ENDPOINT,
+  readContactForm,
+  sendContact,
+  validateContact,
+  type ContactErrors,
+  type ContactField,
+} from '@/lib/contact';
 import { propertyTypes, renovationTypes } from '@/data/content';
+import { whatsappUrl } from '@/data/site';
 import { ArrowRight, WhatsApp } from '@/components/ui/Icons';
 
-const initial: ContactState = { status: 'idle' };
+type Status =
+  | { kind: 'idle' }
+  | { kind: 'error'; message: string }
+  | { kind: 'success'; message: string; waUrl: string; prefersWhatsapp: boolean };
 
 const inputBase =
   'peer w-full border-0 border-b border-[var(--line-strong)] bg-transparent px-0 pt-2 pb-3 text-lg text-bone placeholder:text-bone/30 transition-colors focus:border-bone focus:outline-none focus-visible:outline-none aria-[invalid=true]:border-oxido-claro';
+
+// Seta do <select>: classe .select-arrow em globals.css (independe do caminho base).
+const selectArrow = 'select-arrow appearance-none pr-8';
 
 function Field({
   name,
@@ -39,39 +54,74 @@ function Field({
   );
 }
 
+/**
+ * Formulário 100% no navegador: valida, envia para NEXT_PUBLIC_FORM_ENDPOINT
+ * (se configurado) e oferece a continuação pelo WhatsApp com a mensagem pronta.
+ */
 export function ContactForm() {
-  const [state, action, pending] = useActionState(submitContact, initial);
+  const [status, setStatus] = useState<Status>({ kind: 'idle' });
+  const [errors, setErrors] = useState<ContactErrors>({});
+  const [pending, setPending] = useState(false);
   const [prefersWhatsapp, setPrefersWhatsapp] = useState(false);
   const success = useRef<HTMLDivElement>(null);
-  const e = state.errors ?? {};
-  const v = state.values ?? {};
+  const e = errors;
 
   useEffect(() => {
-    if (state.status === 'success') success.current?.focus();
-    if (state.status === 'error') {
-      const first = Object.keys(state.errors ?? {})[0];
-      if (first) document.getElementById(`f-${first}`)?.focus();
-    }
-  }, [state]);
+    if (status.kind === 'success') success.current?.focus();
+  }, [status]);
 
-  if (state.status === 'success') {
+  async function onSubmit(ev: FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    const form = ev.currentTarget;
+    // Honeypot: robôs preenchem o campo escondido.
+    if (String(new FormData(form).get('empresa_site') ?? '').trim()) return;
+
+    const values = readContactForm(form);
+    const found = validateContact(values);
+    setErrors(found);
+    const first = Object.keys(found)[0];
+    if (first) {
+      setStatus({ kind: 'error', message: 'Revise os campos destacados.' });
+      document.getElementById(`f-${first}`)?.focus();
+      return;
+    }
+
+    setPending(true);
+    const waUrl = whatsappUrl(contactSummary(values));
+    try {
+      const sent = await sendContact(values);
+      setStatus({
+        kind: 'success',
+        waUrl,
+        prefersWhatsapp: values.prefersWhatsapp || !sent,
+        message:
+          sent && !values.prefersWhatsapp
+            ? 'Recebemos sua mensagem. Um especialista vai entrar em contato para entender o seu projeto.'
+            : 'Tudo pronto. Envie sua mensagem pelo WhatsApp para falar com um especialista.',
+      });
+    } catch {
+      setStatus({ kind: 'error', message: 'Não foi possível enviar agora. Tente de novo ou fale pelo WhatsApp.' });
+    } finally {
+      setPending(false);
+    }
+  }
+
+  if (status.kind === 'success') {
     return (
       <div ref={success} tabIndex={-1} className="border border-[var(--line-strong)] p-8 outline-none md:p-12" role="status">
-        <p className="label text-oxido-claro">Mensagem recebida</p>
-        <p className="display display-sm mt-6">{state.message}</p>
-        {state.whatsappUrl && (
-          <a
-            href={state.whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`label mt-10 inline-flex items-center gap-4 px-5 py-4 transition-colors ${
-              state.prefersWhatsapp ? 'bg-bone text-ink hover:bg-oxido-claro' : 'border border-[var(--line-strong)] hover:bg-bone hover:text-ink'
-            }`}
-          >
-            Continuar no WhatsApp
-            <WhatsApp />
-          </a>
-        )}
+        <p className="label text-oxido-claro">{status.prefersWhatsapp ? 'Mensagem pronta' : 'Mensagem recebida'}</p>
+        <p className="display display-sm mt-6">{status.message}</p>
+        <a
+          href={status.waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`label mt-10 inline-flex items-center gap-4 px-5 py-4 transition-colors ${
+            status.prefersWhatsapp ? 'bg-bone text-ink hover:bg-oxido-claro' : 'border border-[var(--line-strong)] hover:bg-bone hover:text-ink'
+          }`}
+        >
+          {status.prefersWhatsapp ? 'Enviar pelo WhatsApp' : 'Continuar no WhatsApp'}
+          <WhatsApp />
+        </a>
       </div>
     );
   }
@@ -84,9 +134,13 @@ export function ContactForm() {
   });
 
   return (
-    <form action={action} noValidate className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+    <form
+      action={FORM_ENDPOINT || undefined}
+      method="post"
+      onSubmit={onSubmit}
+      noValidate className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
       <Field name="nome" label="Nome" error={e.nome} className="sm:col-span-2">
-        <input {...aria('nome')} type="text" autoComplete="name" required defaultValue={v.nome} className={inputBase} />
+        <input {...aria('nome')} type="text" autoComplete="name" required className={inputBase} />
       </Field>
 
       <Field name="whatsapp" label="WhatsApp" error={e.whatsapp}>
@@ -97,17 +151,17 @@ export function ContactForm() {
           autoComplete="tel-national"
           placeholder="(00) 00000-0000"
           required
-          defaultValue={v.whatsapp}
+         
           className={inputBase}
         />
       </Field>
 
       <Field name="email" label="E-mail" error={e.email} hint={prefersWhatsapp ? 'opcional' : undefined}>
-        <input {...aria('email')} type="email" autoComplete="email" required={!prefersWhatsapp} defaultValue={v.email} className={inputBase} />
+        <input {...aria('email')} type="email" autoComplete="email" required={!prefersWhatsapp} className={inputBase} />
       </Field>
 
       <Field name="imovel" label="Tipo de imóvel" error={e.imovel}>
-        <select {...aria('imovel')} required defaultValue={v.imovel ?? ''} className={`${inputBase} appearance-none bg-[url('/select-arrow.svg')] bg-[length:0.75rem] bg-[right_0.25rem_center] bg-no-repeat pr-8`}>
+        <select {...aria('imovel')} required defaultValue="" className={`${inputBase} ${selectArrow}`}>
           <option value="" disabled className="bg-ink">
             Selecione
           </option>
@@ -120,11 +174,11 @@ export function ContactForm() {
       </Field>
 
       <Field name="cidade" label="Cidade" error={e.cidade}>
-        <input {...aria('cidade')} type="text" autoComplete="address-level2" required defaultValue={v.cidade} className={inputBase} />
+        <input {...aria('cidade')} type="text" autoComplete="address-level2" required className={inputBase} />
       </Field>
 
       <Field name="reforma" label="Tipo de reforma" error={e.reforma} className="sm:col-span-2">
-        <select {...aria('reforma')} required defaultValue={v.reforma ?? ''} className={`${inputBase} appearance-none bg-[url('/select-arrow.svg')] bg-[length:0.75rem] bg-[right_0.25rem_center] bg-no-repeat pr-8`}>
+        <select {...aria('reforma')} required defaultValue="" className={`${inputBase} ${selectArrow}`}>
           <option value="" disabled className="bg-ink">
             Selecione
           </option>
@@ -141,7 +195,7 @@ export function ContactForm() {
           {...aria('mensagem')}
           rows={4}
           placeholder="Conte um pouco sobre o imóvel, o que deseja mudar e quando pretende começar."
-          defaultValue={v.mensagem}
+         
           className={`${inputBase} resize-y`}
         />
       </Field>
@@ -177,7 +231,7 @@ export function ContactForm() {
 
       <div className="flex flex-col gap-4 pt-4 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-dark" aria-live="polite">
-          {state.status === 'error' ? state.message : 'Seus dados são usados apenas para responder ao seu contato.'}
+          {status.kind === 'error' ? status.message : 'Seus dados são usados apenas para responder ao seu contato.'}
         </p>
         <button
           type="submit"

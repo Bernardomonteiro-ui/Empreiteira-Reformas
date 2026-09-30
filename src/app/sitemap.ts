@@ -3,6 +3,9 @@ import { projects } from '@/data/projects';
 import { servicePages } from '@/data/services';
 import { absoluteUrl } from '@/lib/seo';
 
+// Gerado como arquivo estático no build (compatível com GitHub Pages).
+export const dynamic = 'force-static';
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   return [
