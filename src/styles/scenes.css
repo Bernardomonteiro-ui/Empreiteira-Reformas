@@ -1,0 +1,65 @@
+/* ==========================================================================
+   Cenas guiadas por scroll.
+   O hook `useScrollProgress` escreve `--p` (0 → 1) no elemento da cena.
+   Sem JS, com movimento reduzido ou no mobile, `--p` vale 1: tudo visível.
+   Apenas transform e opacity são animados.
+   ========================================================================== */
+
+[data-scene] {
+  --p: 1;
+}
+
+/* --- 02 · Antes de construir: imagem revela detalhes -------------------- */
+
+.bb-cover {
+  transform-origin: bottom center;
+  transform: scaleY(clamp(0, calc(1 - var(--p) * 3.4), 1));
+}
+
+.bb-marker {
+  --s: 0.3;
+  opacity: clamp(0, calc((var(--p) - var(--s)) * 10), 1);
+  transform: scale(clamp(0.6, calc(0.6 + (var(--p) - var(--s)) * 6), 1));
+}
+
+.bb-detail {
+  opacity: clamp(0, calc((var(--p) - 0.42) * 8), 1);
+  transform: translate3d(0, calc(clamp(0, (0.55 - var(--p)) * 8, 1) * 3rem), 0);
+}
+
+.bb-note {
+  opacity: clamp(0, calc((var(--p) - var(--s, 0.5)) * 10), 1);
+  transform: translate3d(calc(clamp(0, (var(--s, 0.5) + 0.1 - var(--p)) * 10, 1) * -1rem), 0, 0);
+}
+
+/* --- 03 · O problema: palavras surgem e são "corrigidas" --------------- */
+
+.pb-word {
+  --s: calc(0.05 + var(--i) * 0.15);
+  opacity: clamp(0.06, calc((var(--p) - var(--s)) * 9), 1);
+  transform: translate3d(0, calc(clamp(0, (var(--s) + 0.1 - var(--p)) * 10, 1) * 2.5rem), 0);
+}
+
+.pb-strike {
+  transform-origin: left center;
+  transform: scaleX(clamp(0, calc((var(--p) - 0.7 - var(--i) * 0.04) * 7), 1));
+}
+
+.pb-counter {
+  opacity: clamp(0, calc((var(--p) - 0.05) * 10), 1);
+}
+
+/* --- 04 · Processo: linha que acompanha o scroll ------------------------ */
+
+.tl-fill {
+  transform-origin: top center;
+  transform: scaleY(var(--p));
+}
+
+/* --- Sem movimento: congela no estado final ----------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scene] {
+    --p: 1 !important;
+  }
+}

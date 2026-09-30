@@ -1,0 +1,542 @@
+@import 'tailwindcss';
+@import './scenes.css';
+
+/* ==========================================================================
+   Identidade — "Prancha"
+   O site é tratado como um jogo de pranchas técnicas: papel cal, grafite,
+   linhas finas de cota e um único acento em óxido.
+   ========================================================================== */
+
+@theme {
+  --color-cal: #f1eee8;
+  --color-cal-2: #e6e1d7;
+  --color-ink: #151411;
+  --color-ink-2: #23211d;
+  --color-muted: #625e56; /* 5.6:1 sobre cal */
+  --color-muted-dark: #a39e94; /* 7.0:1 sobre ink */
+  --color-bone: #ece8e0;
+  --color-oxido: #a8431f; /* 5.2:1 sobre cal */
+  --color-oxido-claro: #e2784c; /* 6.3:1 sobre ink */
+
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --ease-arch: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-arch-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --breakpoint-3xl: 112rem;
+}
+
+:root {
+  --gutter: clamp(1rem, 3.2vw, 3rem);
+  --header-h: 4.5rem;
+  --line: color-mix(in oklab, var(--color-ink) 16%, transparent);
+  --line-strong: color-mix(in oklab, var(--color-ink) 32%, transparent);
+  color-scheme: light;
+}
+
+.theme-dark {
+  --line: color-mix(in oklab, var(--color-bone) 16%, transparent);
+  --line-strong: color-mix(in oklab, var(--color-bone) 34%, transparent);
+  background: var(--color-ink);
+  color: var(--color-bone);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: var(--header-h);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background: var(--color-cal);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--color-oxido);
+    color: var(--color-cal);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-oxido);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  .theme-dark :focus-visible {
+    outline-color: var(--color-oxido-claro);
+  }
+
+  img {
+    user-select: none;
+  }
+}
+
+/* ==========================================================================
+   Tipografia
+   ========================================================================== */
+
+@utility display {
+  font-family: var(--font-sans);
+  font-stretch: 72%;
+  font-weight: 560;
+  text-transform: uppercase;
+  line-height: 0.88;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+@utility display-xl {
+  font-size: clamp(3.4rem, 12.4vw, 13.5rem);
+}
+
+@utility display-lg {
+  font-size: clamp(2.6rem, 7.6vw, 8.25rem);
+}
+
+@utility display-md {
+  font-size: clamp(2.1rem, 4.8vw, 5rem);
+}
+
+@utility display-sm {
+  font-size: clamp(1.6rem, 2.8vw, 2.75rem);
+}
+
+/* Itálico editorial — usado com parcimônia dentro dos títulos. */
+@utility serif-i {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+/* Anotação técnica — rótulos, cotas, metadados. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+@utility lead {
+  font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+
+@utility prose-editorial {
+  text-wrap: pretty;
+  & p + p {
+    margin-top: 1.1em;
+  }
+}
+
+@utility container-x {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 112rem;
+  padding-inline: var(--gutter);
+}
+
+@utility hairline {
+  border-color: var(--line);
+}
+
+/* ==========================================================================
+   Placeholder visível (somente enquanto houver dados provisórios)
+   ========================================================================== */
+
+.ph-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.15em 0.5em;
+  border: 1px dashed currentColor;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-oxido);
+  background: color-mix(in oklab, var(--color-oxido) 8%, transparent);
+  vertical-align: middle;
+  white-space: nowrap;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.theme-dark .ph-marker {
+  color: var(--color-oxido-claro);
+}
+
+/* ==========================================================================
+   Motion — tudo em transform/opacity. Conteúdo visível sem JS.
+   A classe .js é aplicada no <html> antes da pintura (ver layout).
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 1.75rem, 0);
+    transition:
+      opacity 1.1s var(--ease-arch),
+      transform 1.1s var(--ease-arch);
+    transition-delay: calc(var(--d, 0) * 1ms);
+  }
+
+  .js [data-reveal='fade'] {
+    transform: none;
+  }
+
+  .js [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Texto revelado linha a linha através de máscara. */
+  .js [data-reveal='lines'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .js [data-reveal='lines'] .line > span {
+    display: inline-block;
+    transform: translate3d(0, 105%, 0);
+    transition: transform 1.2s var(--ease-arch);
+    transition-delay: calc((var(--d, 0) + var(--i, 0) * 90) * 1ms);
+  }
+
+  .js [data-reveal='lines'].is-in .line > span {
+    transform: none;
+  }
+
+  /* Linhas que se desenham (cotas e divisores). */
+  .js [data-reveal='draw'] {
+    opacity: 1;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 1.4s var(--ease-arch-in-out);
+    transition-delay: calc(var(--d, 0) * 1ms);
+  }
+
+  .js [data-reveal='draw'].is-in {
+    transform: none;
+  }
+
+  /* Imagem que surge por trás de uma "cortina" de papel. */
+  .js [data-reveal='curtain'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .js [data-reveal='curtain'] .curtain {
+    transform-origin: top center;
+    transition: transform 1.3s var(--ease-arch-in-out);
+    transition-delay: calc(var(--d, 0) * 1ms);
+  }
+
+  .js [data-reveal='curtain'].is-in .curtain {
+    transform: scaleY(0);
+  }
+
+  .js [data-reveal='curtain'] .curtain-img {
+    transform: scale(1.12);
+    transition: transform 1.8s var(--ease-arch);
+    transition-delay: calc(var(--d, 0) * 1ms);
+  }
+
+  .js [data-reveal='curtain'].is-in .curtain-img {
+    transform: none;
+  }
+}
+
+.line {
+  display: block;
+  overflow: clip;
+  /* folga para descendentes e acentos sem cortar */
+  padding-block: 0.06em;
+  margin-block: -0.06em;
+}
+
+.curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--curtain, var(--color-cal));
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curtain {
+    display: none;
+  }
+}
+
+/* sem JS a cortina nunca cobre a imagem */
+html:not(.js) .curtain {
+  display: none;
+}
+
+/* --- Abertura (hero) ---------------------------------------------------- */
+
+@keyframes hero-img {
+  from {
+    transform: scale(1.1);
+  }
+}
+
+/* Título principal: visível desde o 1º quadro (o LCP conta a primeira pintura). */
+@keyframes settle {
+  from {
+    transform: translate3d(0, 0.18em, 0);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1rem, 0);
+  }
+}
+
+@keyframes draw-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-img {
+    animation: hero-img 2.6s var(--ease-arch) both;
+  }
+
+  .hero-settle {
+    animation: settle 1.6s var(--ease-arch) both;
+  }
+
+  .hero-fade {
+    animation: fade-up 1.2s var(--ease-arch) both;
+    animation-delay: calc(var(--d, 0) * 1ms);
+  }
+
+  .hero-draw {
+    transform-origin: left center;
+    animation: draw-x 1.6s var(--ease-arch-in-out) both;
+    animation-delay: calc(var(--d, 0) * 1ms);
+  }
+}
+
+/* --- Parallax e progresso: scroll-driven, aprimoramento progressivo ---- */
+
+@keyframes parallax-y {
+  from {
+    transform: translate3d(0, calc(var(--px, 8) * -1%), 0) scale(1.14);
+  }
+  to {
+    transform: translate3d(0, calc(var(--px, 8) * 1%), 0) scale(1.14);
+  }
+}
+
+@keyframes hero-drift {
+  to {
+    transform: translate3d(0, 18%, 0);
+  }
+}
+
+@keyframes progress-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+  @supports ((animation-timeline: view()) and (animation-range: entry)) {
+    .parallax img {
+      animation: parallax-y linear both;
+      animation-timeline: view();
+    }
+
+    .hero-drift {
+      animation: hero-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+  }
+}
+
+@supports ((animation-timeline: scroll()) and (animation-range: entry)) {
+  .scroll-progress {
+    transform-origin: left center;
+    animation: progress-x linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+/* --- Imagens com hover --------------------------------------------------- */
+
+/* `scale` (e não `transform`) para compor com o parallax sem conflito. */
+.img-hover img {
+  transition: scale 1.4s var(--ease-arch);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .group:hover .img-hover img,
+  .group:focus-visible .img-hover img {
+    scale: 1.035;
+  }
+}
+
+/* --- Transições entre páginas (React <ViewTransition>) ------------------- */
+
+::view-transition-old(.page) {
+  animation: 280ms var(--ease-arch-in-out) both vt-out;
+}
+
+::view-transition-new(.page) {
+  animation: 620ms var(--ease-arch) 120ms both vt-in;
+}
+
+::view-transition-group(.morph) {
+  animation-duration: 700ms;
+  animation-timing-function: var(--ease-arch);
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -1.5rem, 0);
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 2rem, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* --- Utilitários diversos ------------------------------------------------ */
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Acordeões nativos: remove o marcador padrão */
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  details::details-content {
+    transition:
+      block-size 0.5s var(--ease-arch),
+      content-visibility 0.5s allow-discrete;
+    block-size: 0;
+    overflow: clip;
+  }
+
+  details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+
+/* Cursor customizado (apenas ponteiro fino) */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.cursor__ring {
+  position: absolute;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: -1.125rem 0 0 -1.125rem;
+  border: 1px solid var(--color-bone);
+  border-radius: 999px;
+  mix-blend-mode: difference;
+  transition:
+    transform 0.5s var(--ease-arch),
+    opacity 0.3s,
+    background-color 0.3s;
+}
+
+.cursor__label {
+  position: absolute;
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  color: var(--color-ink);
+  transition:
+    opacity 0.3s,
+    transform 0.5s var(--ease-arch);
+  white-space: nowrap;
+}
+
+.cursor[data-state='view'] .cursor__ring {
+  transform: scale(2.6);
+  background: var(--color-bone);
+  mix-blend-mode: normal;
+}
+
+.cursor[data-state='view'] .cursor__label {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.cursor[data-state='link'] .cursor__ring {
+  transform: scale(0.45);
+  background: var(--color-bone);
+}
+
+.cursor[data-hidden='true'] .cursor__ring,
+.cursor[data-hidden='true'] .cursor__label {
+  opacity: 0;
+}
