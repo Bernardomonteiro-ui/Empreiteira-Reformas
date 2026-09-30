@@ -56,6 +56,13 @@
     }
   }
 
+  /* Nada pode alargar a página no celular. `clip` (e não `hidden`) mantém o
+     position: sticky funcionando. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   body {
     background: var(--color-cal);
     color: var(--color-ink);
@@ -178,7 +185,9 @@
   color: var(--color-oxido);
   background: color-mix(in oklab, var(--color-oxido) 8%, transparent);
   vertical-align: middle;
-  white-space: nowrap;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-style: normal;
   font-weight: 500;
   line-height: 1.4;

@@ -27,7 +27,8 @@ export function ContactSection({ sheet = '09' }: { sheet?: string }) {
               lines={['Conte o que', 'você está', <span key="c" className="serif-i text-oxido-claro">planejando.</span>]}
             />
             <p className="lead mt-10 max-w-[36ch] text-muted-dark" data-reveal>
-              Quanto mais soubermos sobre o imóvel e o que você imagina, mais precisa será a primeira conversa.
+              Quanto mais soubermos sobre o imóvel e o que você imagina, mais precisa será a primeira conversa. Quem
+              responde é o {site.responsible}, responsável pela empresa.
             </p>
 
             <ol className="mt-12 border-t border-[var(--line)]">
@@ -43,12 +44,17 @@ export function ContactSection({ sheet = '09' }: { sheet?: string }) {
               <ButtonLink href={whatsappUrl()} external tone="dark" variant="outline" icon={<WhatsApp className="size-4" />}>
                 {ctaSecondary.label}
               </ButtonLink>
-              {real(site.email) ? (
+              <p className="text-muted-dark">
+                <a href={`tel:+${site.whatsapp}`} className="text-bone hover:text-oxido-claro">
+                  {site.phoneDisplay}
+                </a>
+                <br />
+                {site.openingHours}
+              </p>
+              {real(site.email) && (
                 <a href={`mailto:${site.email}`} className="label text-muted-dark hover:text-bone">
                   {site.email}
                 </a>
-              ) : (
-                <span className="label text-muted-dark">{site.email}</span>
               )}
             </div>
           </div>

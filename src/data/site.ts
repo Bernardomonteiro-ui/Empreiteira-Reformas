@@ -19,34 +19,41 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.seudominio.com.br',
 
   /** Cidade principal — aparece em títulos, textos e no schema. */
-  city: '[CIDADE]',
-  state: '[UF]',
+  city: 'São Caetano do Sul',
+  state: 'SP',
   /** Região de atendimento (ex.: "Grande São Paulo"). */
   region: '[REGIÃO DE ATENDIMENTO]',
   /** Bairros atendidos — use apenas bairros onde a empresa realmente atua. */
   neighborhoods: ['[BAIRRO 1]', '[BAIRRO 2]', '[BAIRRO 3]', '[BAIRRO 4]', '[BAIRRO 5]', '[BAIRRO 6]'],
 
   address: {
-    street: '[RUA, NÚMERO]',
-    complement: '[COMPLEMENTO]',
-    district: '[BAIRRO]',
-    postalCode: '[00000-000]',
+    /** O perfil do Google não informa o número. Acrescente quando tiver. */
+    street: 'Alameda São Caetano',
+    district: 'Santa Paula',
+    postalCode: '09560-050',
   },
   /** Coordenadas do endereço (Google Maps). Deixe null se não quiser publicar. */
   geo: null as { lat: number; lng: number } | null,
 
   /** Somente números, com DDI + DDD. Ex.: 5511999999999 */
-  whatsapp: '[5500000000000]',
-  phoneDisplay: '[(00) 00000-0000]',
+  whatsapp: '5511943642768',
+  phoneDisplay: '(11) 94364-2768',
   email: '[contato@seudominio.com.br]',
-  openingHours: '[Seg a Sex, 8h às 18h]',
-  /** Formato schema.org — ex.: ['Mo-Fr 08:00-18:00'] */
-  openingHoursSchema: [] as string[],
+  openingHours: 'Segunda a sexta, das 9h às 18h. Sábado, das 9h às 13h.',
+  /** Formato schema.org */
+  openingHoursSchema: ['Mo-Fr 09:00-18:00', 'Sa 09:00-13:00'],
+  /** Responsável pela empresa (citado nas avaliações do Google). */
+  responsible: 'Rafael',
+  /** Avaliação pública no Google (conferir e atualizar periodicamente). */
+  googleRating: { value: 5, count: 9 },
+  /** Link do perfil no Google Maps — cole aqui o link "Compartilhar" do perfil. */
+  googleProfileUrl: '[https://maps.app.goo.gl/...]',
   foundingYear: '[ANO DE FUNDAÇÃO]',
 
+  /** A empresa ainda não tem redes sociais. Preencha quando tiver; vazio = oculto. */
   social: {
-    instagram: '[https://instagram.com/perfil]',
-    linkedin: '[https://linkedin.com/company/perfil]',
+    instagram: '',
+    linkedin: '',
   },
 
   /** Mensagem padrão ao abrir o WhatsApp. */
@@ -63,6 +70,14 @@ export function isPlaceholder(value: unknown): boolean {
 /** Retorna o valor apenas se for real (útil para schema e links). */
 export function real<T>(value: T): T | undefined {
   return isPlaceholder(value) ? undefined : value;
+}
+
+/** Busca do endereço no Google Maps (enquanto não houver link do perfil). */
+export function mapsUrl(): string {
+  const profile = real(site.googleProfileUrl);
+  if (profile) return profile;
+  const q = `${site.address.street}, ${site.address.district}, ${site.city} - ${site.state}, ${site.address.postalCode}`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
 
 export function whatsappUrl(message: string = site.whatsappMessage): string {

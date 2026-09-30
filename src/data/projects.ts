@@ -36,7 +36,7 @@ export const projects: Project[] = [
     slug: 'apartamento-jardins',
     name: 'Apartamento Jardins',
     type: 'Reforma completa',
-    location: `Jardins — ${site.city}`,
+    location: `[BAIRRO] — ${site.city}`,
     area: 92,
     duration: '[XX] semanas',
     year: '[ANO]',

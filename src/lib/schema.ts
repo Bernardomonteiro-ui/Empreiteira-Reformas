@@ -63,7 +63,7 @@ export function organizationSchema(): Json {
     telephone: real(site.whatsapp) ? `+${site.whatsapp.replace(/\D/g, '')}` : undefined,
     foundingDate: site.foundingYear,
     taxID: site.cnpj,
-    sameAs: [site.social.instagram, site.social.linkedin],
+    sameAs: [site.social.instagram, site.social.linkedin, site.googleProfileUrl].filter(Boolean),
   }) as Json;
 }
 
@@ -88,7 +88,7 @@ export function localBusinessSchema(): Json {
     email: site.email,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: site.address.street,
+      streetAddress: `${site.address.street}, ${site.address.district}`,
       addressLocality: site.city,
       addressRegion: site.state,
       postalCode: site.address.postalCode,

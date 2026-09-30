@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { site, whatsappUrl, real, isPlaceholder } from '@/data/site';
+import { site, whatsappUrl, mapsUrl, real, isPlaceholder } from '@/data/site';
 import { services } from '@/data/services';
 import { mainNav } from '@/data/navigation';
 import { PlaceholderMarker } from '@/components/ui/Placeholder';
@@ -11,7 +11,11 @@ import { PlaceholderMarker } from '@/components/ui/Placeholder';
 export function Footer() {
   const year = new Date().getFullYear();
   const cellLabel = 'label text-muted-dark mb-4 block';
-  const hasPlaceholders = isPlaceholder(site.city) || isPlaceholder(site.whatsapp) || isPlaceholder(site.email);
+  const hasPlaceholders = [site.name === 'Estrato' ? '[nome]' : '', site.email, site.region, site.legalName].some(isPlaceholder);
+  const socials = [
+    { label: 'Instagram', href: site.social.instagram },
+    { label: 'LinkedIn', href: site.social.linkedin },
+  ].filter((s) => s.href && !isPlaceholder(s.href));
 
   return (
     <footer className="theme-dark relative overflow-hidden pb-24 lg:pb-0">
@@ -22,7 +26,7 @@ export function Footer() {
         </p>
         {hasPlaceholders && (
           <p className="mt-8">
-            <PlaceholderMarker label="Dados de contato e localização provisórios" />
+            <PlaceholderMarker label="Nome, e-mail, CNPJ e região de atendimento provisórios" />
           </p>
         )}
       </div>
@@ -80,15 +84,19 @@ export function Footer() {
                   WhatsApp {site.phoneDisplay}
                 </a>
               </p>
-              <p>
-                <a href={real(site.email) ? `mailto:${site.email}` : '#contato'} className="break-all hover:text-oxido-claro">
-                  {site.email}
-                </a>
-              </p>
+              {real(site.email) && (
+                <p>
+                  <a href={`mailto:${site.email}`} className="break-all hover:text-oxido-claro">
+                    {site.email}
+                  </a>
+                </p>
+              )}
               <p className="text-sm text-muted-dark">
-                {site.address.street} — {site.address.district}
-                <br />
-                {site.city}/{site.state} · {site.address.postalCode}
+                <a href={mapsUrl()} target="_blank" rel="noopener noreferrer" className="hover:text-bone">
+                  {site.address.street}, {site.address.district}
+                  <br />
+                  {site.city}/{site.state}, CEP {site.address.postalCode}
+                </a>
               </p>
               <p className="text-sm text-muted-dark">{site.openingHours}</p>
             </address>
@@ -97,7 +105,9 @@ export function Footer() {
           <div className="border-r border-b border-[var(--line)] p-6 sm:col-span-2 lg:col-span-8">
             <span className={cellLabel}>Região de atendimento</span>
             <p className="text-sm text-muted-dark">
-              {site.city} e {site.region}. Bairros atendidos: {site.neighborhoods.join(', ')}.
+              {[site.city, real(site.region)].filter(Boolean).join(' e ')}.
+              {site.neighborhoods.some((n) => !isPlaceholder(n)) &&
+                ` Bairros atendidos: ${site.neighborhoods.filter((n) => !isPlaceholder(n)).join(', ')}.`}
             </p>
           </div>
 
@@ -121,18 +131,17 @@ export function Footer() {
           <p>
             © {year} {site.legalName} · CNPJ {site.cnpj}
           </p>
-          <ul className="flex gap-6">
-            <li>
-              <a href={real(site.social.instagram) ?? '#'} target="_blank" rel="noopener noreferrer" className="hover:text-bone">
-                Instagram
-              </a>
-            </li>
-            <li>
-              <a href={real(site.social.linkedin) ?? '#'} target="_blank" rel="noopener noreferrer" className="hover:text-bone">
-                LinkedIn
-              </a>
-            </li>
-          </ul>
+          {socials.length > 0 && (
+            <ul className="flex gap-6">
+              {socials.map((s) => (
+                <li key={s.label}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-bone">
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 

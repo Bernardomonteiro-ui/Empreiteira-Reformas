@@ -138,7 +138,7 @@ export function ContactForm() {
       action={FORM_ENDPOINT || undefined}
       method="post"
       onSubmit={onSubmit}
-      noValidate className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+      noValidate className="relative grid gap-x-8 gap-y-6 sm:grid-cols-2">
       <Field name="nome" label="Nome" error={e.nome} className="sm:col-span-2">
         <input {...aria('nome')} type="text" autoComplete="name" required className={inputBase} />
       </Field>
@@ -201,7 +201,7 @@ export function ContactForm() {
       </Field>
 
       {/* Honeypot — invisível para pessoas */}
-      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute top-0 left-0 h-px w-px overflow-hidden opacity-0">
         <label>
           Não preencha
           <input type="text" name="empresa_site" tabIndex={-1} autoComplete="off" />
