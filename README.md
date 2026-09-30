@@ -92,7 +92,7 @@ Redimensiona para até 2400px e recomprime. O `next/image` gera AVIF/WebP respon
 
 ### Formulário
 
-O formulário funciona no navegador (compatível com hospedagem estática): valida os campos e envia um POST em JSON para `NEXT_PUBLIC_FORM_ENDPOINT`, que pode ser um serviço como Formspree/Getform ou uma API própria. No GitHub, defina essa variável em **Settings → Secrets and variables → Actions → Variables**. Sem endpoint configurado, o contato segue pelo WhatsApp com a mensagem já preenchida. A lógica está em `src/lib/contact.ts`.
+Ao clicar em **Enviar pelo WhatsApp**, o formulário é validado no navegador e o WhatsApp da empresa abre com a mensagem já escrita (nome, imóvel, cidade, tipo de reforma e mensagem). O cliente só precisa tocar em enviar. Nenhum dado fica salvo no site. A lógica está em `src/lib/contact.ts` e o número em `src/data/site.ts`.
 
 ## SEO
 

@@ -41,8 +41,6 @@ jobs:
           STATIC_EXPORT: 'true'
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_SITE_URL: ${{ steps.pages.outputs.base_url }}
-          # Opcional: endpoint do formulário (Formspree etc.) em Settings → Secrets and variables → Actions → Variables
-          NEXT_PUBLIC_FORM_ENDPOINT: ${{ vars.NEXT_PUBLIC_FORM_ENDPOINT }}
 
       - run: touch out/.nojekyll
 
