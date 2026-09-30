@@ -4,10 +4,19 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4. Todas as p�
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev            # http://localhost:3000
 npm run build && npm start
+npm run build:static   # versão estática em out/ (GitHub Pages)
 npm run typecheck
 ```
+
+## Publicação
+
+**GitHub Pages (automático).** O workflow `.github/workflows/deploy-pages.yml` compila e publica o site a cada push na `main`. Configuração única: no repositório, **Settings → Pages → Build and deployment → Source: GitHub Actions**. O endereço fica `https://<usuario>.github.io/<repositorio>/`.
+
+No modo estático, o build gera variantes WebP responsivas das fotos (`scripts/static-images.mjs`) e ajusta os arquivos de prefetch para hospedagens sem reescrita de URL (`scripts/flatten-export.mjs`).
+
+**Vercel / servidor Node.** `npm run build && npm start`, ou conecte o repositório na Vercel. Nesse modo as imagens são otimizadas sob demanda (AVIF/WebP).
 
 ## Conceito
 
@@ -35,7 +44,6 @@ src/
     page.tsx              home
     [servico]/page.tsx    landing pages de serviço (SEO)
     projetos/             portfólio + página de cada projeto
-    actions/contact.ts    Server Action do formulário
     sitemap.ts, robots.ts, not-found.tsx, icon.svg
   components/
     home/                 seções da home
@@ -84,7 +92,7 @@ Redimensiona para até 2400px e recomprime. O `next/image` gera AVIF/WebP respon
 
 ### Formulário
 
-`src/app/actions/contact.ts` valida os dados e hoje apenas registra o lead no log do servidor. Conecte ao destino escolhido (e-mail transacional, CRM ou planilha) no bloco marcado com `TODO(integração)`. Funciona sem JavaScript; com a opção "Prefiro falar pelo WhatsApp", o cliente recebe um link com a mensagem já preenchida.
+O formulário funciona no navegador (compatível com hospedagem estática): valida os campos e envia um POST em JSON para `NEXT_PUBLIC_FORM_ENDPOINT`, que pode ser um serviço como Formspree/Getform ou uma API própria. No GitHub, defina essa variável em **Settings → Secrets and variables → Actions → Variables**. Sem endpoint configurado, o contato segue pelo WhatsApp com a mensagem já preenchida. A lógica está em `src/lib/contact.ts`.
 
 ## SEO
 

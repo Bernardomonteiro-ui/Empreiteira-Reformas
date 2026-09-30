@@ -23,9 +23,9 @@ const nextConfig: NextConfig = {
     inlineCss: true,
   },
   images: {
-    // Hospedagem estática não tem otimizador de imagens: servem-se os arquivos
-    // já comprimidos por `npm run images`.
-    unoptimized: isStatic,
+    // Hospedagem estática não tem otimizador de imagens: as variantes WebP são
+    // geradas no build (scripts/static-images.mjs) e servidas por um loader próprio.
+    ...(isStatic && { loader: 'custom', loaderFile: './src/lib/image-loader.ts' }),
     formats: ['image/avif', 'image/webp'],
     qualities: [60, 75, 85],
     minimumCacheTTL: 60 * 60 * 24 * 30,

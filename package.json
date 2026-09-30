@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "images": "node scripts/optimize-images.mjs"
+    "images": "node scripts/optimize-images.mjs",
+    "build:static": "next build && node scripts/flatten-export.mjs out && node scripts/static-images.mjs out"
   },
   "dependencies": {
     "next": "^16.3.8",
